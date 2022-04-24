@@ -18,7 +18,7 @@ from pathlib import Path
 def entry(jobs, save_dir: Path, walks, walk_length, dimensions, rebuild: bool, target: Path, name: str):
     save_dir = save_dir / "emb" / name
     save_dir.mkdir(exist_ok=True, parents=True)
-    file_name = save_dir / f"{walks}-{walk_length}-{dimensions}"
+    file_name = save_dir / f"node2vec-{walks}-{walk_length}-{dimensions}"
     if file_name.exists() and not rebuild:
         sys.exit(f"{file_name!s} already exists, skipping. pass --rebuild to force rebuild")
     import src.node2vec as node2vec

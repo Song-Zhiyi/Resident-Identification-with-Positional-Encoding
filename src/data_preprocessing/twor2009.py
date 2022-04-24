@@ -32,7 +32,7 @@ def annotate_row(df):
     df['id'] = id_list
     df['event_annotated'] = event_list
 
-    df = df.drop(columns=['event', 'event_status'])
+    #df = df.drop(columns=['event', 'event_status'])
     return df
 
 def fix_datetime(df):
@@ -102,7 +102,7 @@ def cyclical_time(dat):
 
 def get_data(force: bool=False,
              data_path="./data/twor.2009/annotated",
-             cache_path=".cache/data/twor-2009-annotated-preprocessed.pkl"):
+             cache_path="preprocessed/data/twor-2009-annotated-preprocessed.pkl"):
     data_path = Path(data_path)
     saved_path = Path(cache_path)
 
@@ -125,7 +125,7 @@ def get_data(force: bool=False,
     dat = encode_event_resident(dat)
     dat = cyclical_time(dat)
     dat = sensor_reading_to_number(dat)
-    dat = dat.dropna()
+    #dat = dat.dropna()
 
     try:
         logger.info(f"saving preprocessed data into {saved_path!s}")

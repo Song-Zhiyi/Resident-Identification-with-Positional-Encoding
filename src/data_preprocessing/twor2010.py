@@ -1,3 +1,4 @@
+#%%
 import io
 import os
 import pickle
@@ -47,6 +48,11 @@ def _parse_time(t):
         pass
     return datetime.strptime(t, "%Y-%m-%d %H:%M:%S")
 
+from typing import TypedDict
+class ResultDict(TypedDict):
+    event_to_id: dict[str, int]
+    sensor_to_id: dict[str, int]
+    dat: pd.DataFrame
 
 class Loader:
     def __init__(self,
@@ -55,6 +61,7 @@ class Loader:
                  debug: bool = False):
         self.base_dir = Path(base_dir).expanduser().absolute()
         self.cache_dir = Path(cache_dir).expanduser().absolute() / "data"
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
 
         self.sensor_label = Labeller("Unknown")
         self.event_label = Labeller("")
@@ -74,7 +81,6 @@ class Loader:
             "end": 0,
             None: None,
         }
-        sl = self.sensor_label
 
         for line in fp:
             line = line.strip()
@@ -159,7 +165,11 @@ class Loader:
         )
         dat = self.__preprocess(dat)
         dat.reset_index(drop=True, inplace=True)
-        return self.sensor_label.data, dat
+        return ResultDict(
+            event_to_id=self.event_label.data,
+            sensor_to_id=self.sensor_label.data,
+            dat=dat
+        )
 
     def __drop_unused_sensors(self, dat: pd.DataFrame) -> pd.DataFrame:
         dat = dat[
@@ -203,29 +213,168 @@ class Loader:
             self.cache_dir / "twor2010-sensor-mapping.pkl",
         )
 
-    def _dump_cache(self, sensor_map: dict, dat: pd.DataFrame):
+    def _dump_cache(self, result: ResultDict):
         data_path, sensor_map_path = self.__cache_file_path()
         with open(sensor_map_path, "wb") as fp:
-            pickle.dump(sensor_map, fp)
-        dat.to_feather(data_path, compression="zstd")
-        return sensor_map, dat
+            d = dict(result)
+            d.pop("dat")
+            pickle.dump(d, fp)
+        result["dat"].to_feather(data_path, compression="zstd")
+        return result
 
     def _load_cache(self):
         data_path, sensor_map_path = self.__cache_file_path()
         with open(sensor_map_path, "rb") as fp:
-            sm = pickle.load(fp)
+            ret: ResultDict = pickle.load(fp)
+        ret["dat"] = pd.read_feather(data_path)
+        return ret
 
-        dat = pd.read_feather(data_path)
-        return sm, dat
-
-    def load(self, force: bool=False):
+    def load(self, force: bool=False) -> ResultDict:
         try:
             if not force:
                 return self._load_cache()
         except Exception as e:
-            print(str(e))
+            print(f"load cache failed due to {type(e).__name__} {e!s}")
 
         data_file = self.base_dir / "data"
         return self._dump_cache(
-            *self.__load_preprocess(data_file)
+            self.__load_preprocess(data_file)
         )
+
+
+#%%
+
+
+state_labeller = Labeller("")
+r1_events_lab = Labeller(tuple())
+r2_events_lab = Labeller(tuple())
+
+def test():
+    r_to_int = {
+        "ON": 1,
+        "OPEN": 1,
+        "PRESENT": 1,
+        "OFF": 0,
+        "CLOSE": 0,
+        "ABSENT": 0,
+    }
+    with open(Path("../..") / "data/twor.2010" / "data") as fp:
+        both_no_event = 0
+
+        stack = [
+            OrderedDict(),
+            OrderedDict(),
+        ]
+
+        last_ts = datetime.min
+
+        for lineno, line in enumerate(sorted(fp)):
+            line = line.strip()
+            parts = line.split()
+
+            n_parts = len(parts)
+
+            if n_parts == 4:
+                tsd, tst, sid, r = parts
+                sc = ""
+                change = None
+            elif n_parts == 6:
+                tsd, tst, sid, r, sc, change = parts
+            elif n_parts == 0:
+                continue
+            else:
+                raise Exception(parts)
+
+            try:
+                r = r_to_int[r]
+            except KeyError:
+                pass
+
+            try:
+                ts = _parse_time(tsd + " " + tst)
+            except ValueError:
+                print(lineno, line, "cannot parse time")
+                continue
+
+            if last_ts <= ts:
+                last_ts = ts
+            else:
+                print(f"wrong order at {lineno} {last_ts} {ts}")
+
+            state = state_labeller[sc[3:]]
+            if sc.startswith("R1"):
+                who = 0
+            elif sc.startswith("R2"):
+                who = 1
+            else:
+                who = None
+
+            r1 = None
+            r2 = None
+
+            if who is not None:
+                if change == "begin":
+                    if state in stack[who]:
+                        print(f"Event {sc} for already begin at lineno={stack[who][state]}, ignored")
+                    else:
+                        stack[who][state] = lineno
+                elif change == "end":
+                    r1 = tuple(stack[0])
+                    r2 = tuple(stack[1])
+                    if len(stack[who]) == 0:
+                        print(f"at line {lineno}: {sc} end without begin, ignoring this event")
+                    else:
+                        stack[who].pop(state)
+                else:
+                    pass
+                print(lineno, len(stack[0]), len(stack[1]), ts, sc, change)
+
+            if r1 is None:
+                r1 = tuple(stack[0])
+            if r2 is None:
+                r2 = tuple(stack[1])
+
+            r1_nevent = len(r1)
+            r2_nevent = len(r2)
+
+            if r1_nevent + r2_nevent == 0:
+                both_no_event += 1
+
+
+            r1 = r1_events_lab[tuple(stack[0])]
+            r2 = r2_events_lab[tuple(stack[1])]
+
+            yield ts, sid, r, sc, change, r1_nevent, r2_nevent, r1, r2
+
+        for i, s in enumerate(stack):
+            if len(s) != 0:
+                print(f"stack {i} is not empty {s!s}")
+
+
+dat = pd.DataFrame(
+    list(test())
+)
+
+#%%
+print(state_labeller)
+print(r1_events_lab)
+print(r2_events_lab)
+
+r1s = dat[7]
+r2s = dat[8]
+print(dat.shape)
+
+only_one_has_event = dat[
+    ((r1s == 0) & (r2s != 0)) |
+    ((r1s != 0) & (r2s == 0))
+]
+both_have_event = dat[(r1s != 0) & (r2s != 0)]
+both_no_event = dat[(r1s == 0) & (r2s == 0)]
+
+print(f"{len(only_one_has_event)=}")
+print(f"{len(both_have_event)=}")
+print(f"{len(both_no_event)=}")
+
+#%%
+
+dat

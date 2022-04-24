@@ -58,12 +58,13 @@ def prepare_train_graph(floors, add_edges):
 
 if __name__ == '__main__':
     base, sensor_coord = prepare_train_graph([
-        ".cache/graph/floor1.pkl",
-        ".cache/graph/floor2.pkl",
+        "preprocessed/graph/floor1.pkl",
+        "preprocessed/graph/floor2.pkl",
     ], [("M26", "M27")])
 
-    with open(".cache/graph/twor_sensor_graph.pkl", "wb") as fp:
+    with open("preprocessed/graph/twor2009_sensor_graph.pkl", "wb") as fp:
         pickle.dump({
             "adj_matrix": base.to_numpy(),
-            "sensor_coord": sensor_coord
+            "sensor_coord": sensor_coord,
+            "sensor_name_to_id": base.vname_vid,
         }, fp)
