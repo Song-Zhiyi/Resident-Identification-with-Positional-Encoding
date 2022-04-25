@@ -27,11 +27,15 @@ class ExperimentLoader:
         for exp_dir in self.root_dir.iterdir():
             for train_dir in exp_dir.iterdir():
 
-                meta: dict = load_json(train_dir / "metadata.json")
-                meta_keys.update({k: None for k in meta})
-                result = pd.DataFrame(
-                    load_json(train_dir / "results.json")
-                )
+                try:
+                    meta: dict = load_json(train_dir / "metadata.json")
+                    meta_keys.update({k: None for k in meta})
+                    result = pd.DataFrame(
+                        load_json(train_dir / "results.json")
+                    )
+                except FileNotFoundError as e:
+                    print(f"Skipping {train_dir!s} due to {e}")
+                    continue
 
                 for key, val in meta.items():
                     result[key] = val

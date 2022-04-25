@@ -1,3 +1,5 @@
+# ALL scripts should run in project root directory
+
 # TO get sensor map:
 
 run `python -m src.helpers.image_coord_helper data/twor.2009/sensorlayout.jpg`

@@ -143,8 +143,6 @@ y_name = 'resident_id'
 
 dat = dat[X_names + [y_name]].dropna(axis=0)
 
-dat[:4*3000]
-
 X = dat[X_names].to_numpy(dtype=np.float32)
 Y = dat[y_name].to_numpy(dtype=np.int64)
 
@@ -250,8 +248,8 @@ class Experiment:
 
 
 # %%
-N_EPOCH=1
-N_REPEATS=1
+N_EPOCH=40
+N_REPEATS=5
 
 def exp_node2vec_complexity(
         X, Y,
@@ -259,8 +257,6 @@ def exp_node2vec_complexity(
 
     exps: list[Experiment] = []
     for emb_path in Path("preprocessed/emb/kyoto-layout1").iterdir():
-        if emb_path.name != "cluster":
-            continue
         emb = load_embedding_file(emb_path)
         exp = Experiment(
             X=X, y=Y, embeddings=emb,
@@ -274,7 +270,7 @@ def exp_node2vec_complexity(
         exps.append(exp)
     return exps
 
-exps = exp_node2vec_complexity(X, Y, "Node2Vec-Complexity", "twor2009-full")
+exps = exp_node2vec_complexity(X, Y, "Embeddings-Complxity-2", "twor2009-full")
 
 for e in tqdm(exps, desc="Experiment setup", unit="setup", leave=False):
     e.start()
