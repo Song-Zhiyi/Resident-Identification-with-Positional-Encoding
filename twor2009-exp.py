@@ -250,8 +250,8 @@ class Experiment:
 
 
 # %%
-N_EPOCH=40
-N_REPEATS=5
+N_EPOCH=1
+N_REPEATS=1
 
 def exp_node2vec_complexity(
         X, Y,

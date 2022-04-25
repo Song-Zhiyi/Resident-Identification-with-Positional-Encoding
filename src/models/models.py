@@ -258,7 +258,7 @@ class Trainer(object):
                 f"val_acc={best.val_recall:.4f}) "
                 f"of epoch {best.epoch} to {save_path!s}")
             )
-            torch.save(best, save_path)
+            torch.save(self.model, save_path)
 
     def after_epoch(self, result):
         self.save_best("val_loss")
