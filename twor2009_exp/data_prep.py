@@ -14,6 +14,4 @@ dat = dat[dat['resident_id'] >= 0]
 dat.sort_values(by="datetime", inplace=True)
 X_names = ['weekday_sin', 'weekday_cos', 'dayofyear_sin', 'dayofyear_cos', 'secondofday_sin', 'secondofday_cos', 'read_bin', 'sensor_id']
 y_name = 'resident_id'
-dat = dat[X_names + [y_name]].dropna(axis=0)
-
 del s

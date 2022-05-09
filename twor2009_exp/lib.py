@@ -4,8 +4,10 @@ import os
 import logging
 from pathlib import Path
 from dataclasses import dataclass
+from datetime import datetime
 
 import numpy as np
+import pandas as pd
 import torch.nn as nn
 import torch.optim as optim
 from tqdm import tqdm
@@ -125,6 +127,7 @@ def exp_embeddings(
         data_name: str,
         n_epoch: int=N_EPOCH,
         n_repeats: int=N_REPEATS,
+        chunk_size: int=3000,
         progress_pos: int=2):
     emb = load_embedding_file(emb_path)
     exp = Experiment(
@@ -132,9 +135,10 @@ def exp_embeddings(
         experiment_id=exp_name,
         data_name=data_name,
         embeddings_name=emb_path.name,
+        chunk_size=chunk_size,
         n_epoch=n_epoch,
         n_repeats=n_repeats,
-        progress_pos=progress_pos
+        progress_pos=progress_pos,
     )
     return exp
 
@@ -150,6 +154,18 @@ def exp_node2vec_complexity(
                            progress_pos=progress_pos)
         )
     return exps
+
+def select_timeframe(df: pd.DataFrame, start: datetime, end: datetime) -> pd.DataFrame:
+    return df[
+        df['datetime'].between(start, end)
+    ]
+
+def make_data(dat: pd.DataFrame):
+    dat = dat[X_names + [y_name]].dropna(axis=0)
+    X = dat[X_names].to_numpy(dtype=np.float32)
+    y = dat[y_name].to_numpy(dtype=np.int64)
+    return X, y
+
 
 def start_preset(exps: list[Experiment]):
     for e in tqdm(exps, desc="Experiment setup", unit="setup", leave=False, position=1):

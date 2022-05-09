@@ -15,7 +15,7 @@ def parallel_generate_walks(d_graph: dict, global_walk_length: int, num_walks: i
     walks = list()
 
     if not quiet:
-        pbar = tqdm(total=num_walks, desc='Generating walks (CPU: {})'.format(cpu_num), position=cpu_num)
+        pbar = tqdm(total=num_walks, desc='Generating walks (CPU: {})'.format(cpu_num), position=cpu_num, leave=False)
 
     for n_walk in range(num_walks):
 
