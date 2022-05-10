@@ -25,7 +25,11 @@ class ExperimentLoader:
         )
 
         for exp_dir in self.root_dir.iterdir():
+            if not exp_dir.is_dir():
+                continue
             for train_dir in exp_dir.iterdir():
+                if not train_dir.is_dir():
+                    continue
 
                 try:
                     meta: dict = load_json(train_dir / "metadata.json")
