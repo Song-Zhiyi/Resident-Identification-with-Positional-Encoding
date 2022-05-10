@@ -1,7 +1,0 @@
-{
-    "data_name": "twor2009-10d-01",
-    "embeddings_name": "node2vec-700-1000-256",
-    "chunk_size": 3000,
-    "n_epoch": 40,
-    "repeat": 11
-}
