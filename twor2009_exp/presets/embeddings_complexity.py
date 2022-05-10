@@ -3,8 +3,8 @@ from ..lib import *
 
 def _test(X, y, exp_name, repeat, walk_n, walk_len, dimension, window_size):
     emb_path = Path(f"preprocessed/emb/kyoto-layout1/node2vec-{walk_n}-{walk_len}-{dimension}-{window_size}")
-    print(emb_path)
     if not emb_path.exists():
+        print("Building", emb_path)
         os.system((
             "python node2vec_train.py --target preprocessed/graph/kyoto-layout1-full-pruned-prob.pkl "
             f"-J 8 --name kyoto-layout1 --dimensions {dimension} --walks {walk_n} "
