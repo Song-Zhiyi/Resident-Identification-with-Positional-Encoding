@@ -75,7 +75,8 @@ class Experiment:
                     )
                 )
 
-            X = concat_embeddings(X, embeddings, keyidx)
+            if embeddings is not None:
+                X = concat_embeddings(X, embeddings, keyidx)
 
             self.n, self.input_size = X.shape
             self.n_class = len(np.unique(y))
