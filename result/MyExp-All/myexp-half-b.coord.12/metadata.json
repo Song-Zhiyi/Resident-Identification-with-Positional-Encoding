@@ -1,0 +1,7 @@
+{
+    "data_name": "myexp-half-b",
+    "embeddings_name": "coord",
+    "chunk_size": 200,
+    "n_epoch": 100,
+    "repeat": 12
+}

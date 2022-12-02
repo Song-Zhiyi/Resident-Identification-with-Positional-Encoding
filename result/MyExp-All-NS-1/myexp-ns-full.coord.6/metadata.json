@@ -1,0 +1,7 @@
+{
+    "data_name": "myexp-ns-full",
+    "embeddings_name": "coord",
+    "chunk_size": 200,
+    "n_epoch": 100,
+    "repeat": 6
+}

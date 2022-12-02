@@ -1,0 +1,7 @@
+{
+    "data_name": "myexp-half-b",
+    "embeddings_name": "node2vec-100-100-64-2",
+    "chunk_size": 200,
+    "n_epoch": 100,
+    "repeat": 5
+}

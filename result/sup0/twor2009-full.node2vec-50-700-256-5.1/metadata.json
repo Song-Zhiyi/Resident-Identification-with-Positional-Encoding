@@ -1,0 +1,7 @@
+{
+    "data_name": "twor2009-full",
+    "embeddings_name": "node2vec-50-700-256-5",
+    "chunk_size": 3000,
+    "n_epoch": 40,
+    "repeat": 1
+}

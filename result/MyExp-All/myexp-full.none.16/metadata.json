@@ -1,0 +1,7 @@
+{
+    "data_name": "myexp-full",
+    "embeddings_name": "none",
+    "chunk_size": 200,
+    "n_epoch": 100,
+    "repeat": 16
+}

@@ -1,0 +1,7 @@
+{
+    "data_name": "myexp-full",
+    "embeddings_name": "node2vec-100-100-32-1",
+    "chunk_size": 200,
+    "n_epoch": 100,
+    "repeat": 9
+}
